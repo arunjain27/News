@@ -1,9 +1,10 @@
-import React from 'react'
+import { HashRouter as Router, Route, Link, Routes } from 'react-router-dom';
+import React from 'react';
 import News from './components/News';
-
- import LoadingBar from 'react-top-loading-bar'
- import {BrowserRouter, Route, Link, Routes} from 'react-router-dom';
+import LoadingBar from 'react-top-loading-bar';
 import { useState } from 'react';
+// Import HashRouter, Route, and Link from 'react-router-dom'
+
 const App =()=>{
      var pageSize = 8;
   const [progress,setprogress]=useState(0);
@@ -19,7 +20,7 @@ return (
 
 
 
-             <BrowserRouter>  
+             <Router>  
              <nav className="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
                 <div className="container-fluid">
                     <Link className="navbar-brand" to="/">NewsBook</Link>
@@ -57,14 +58,7 @@ return (
            
           
           
-          
-          
-          
-          
-          
-          
-          	
-        	</BrowserRouter> 
+    </Router> 
  
 
 
