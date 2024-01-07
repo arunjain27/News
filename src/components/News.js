@@ -1,110 +1,99 @@
-import React, { useState } from 'react'
-import { useEffect } from 'react'
-import Item from './Item'
-import PropTypes from 'prop-types'
-import "./app.css"
-const News=(props)=>{
- 
-   const[articles,setarticles]=useState([]);
-   const[loading,setloading]=useState(true);
-   const[page,setpage]=useState(1);
 
-   const[totalresults,settotalresults]=useState(0);
+import React, { useState, useEffect } from 'react';
+import Item from './Item';
+import PropTypes from 'prop-types';
+import "./app.css";
+
+const News = (props) => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
 
 
-const updatenews = async ()=>
-{
-     
+  const updateNews = async () => {
     props.setprogress(10);
-    let url=`https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=d5891c5b3a5b4a4d87afc7a0d00465fd&page=${page}&pageSize=${props.pageSize}`
-    
-    props.setprogress(30);
-    setloading(true);
-    let data = await fetch(url);
-    props.setprogress(50);
-    let parsedata= await data.json();
-    props.setprogress(70);
-    setarticles(parsedata.articles);
-   
-    settotalresults(parsedata.totalresults);
-    setloading(false);
-    props.setprogress(100);
-    
-
-}
-
-useEffect(()=>{
-  updatenews();
-
-},[])
-
- 
-const handleprevclick = async ()=>{
-console.log("prev");
-setpage(page-1);
-updatenews();
- 
-}
-const handlenextclick = async ()=>{
-    console.log("next");
-
-        setpage(page+1)
-       updatenews();
+// At the point where you construct your URL for the API call
+const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${process.env.REACT_APP_API_KEY}&page=${page}&pageSize=${props.pageSize}`;
+    setLoading(true);
+    try {
+      let data = await fetch(url);
+      let parsedData = await data.json();
+      if (parsedData.articles) {
+        setArticles(parsedData.articles);
+        setTotalResults(parsedData.totalResults);
+      } else {
+        setArticles([]);
       }
-  
- 
-        return (
-            <>
-  <h1 className="text-center" style={{ margin: '35px 0px', marginTop: '90px' ,color:"#1f456e" }}>{props.category}</h1>
-            
+      setLoading(false);
+    } catch (error) {
+      console.error("Could not fetch the news", error);
+      setLoading(false);
+      // Handle the error state appropriately
+    }
+    props.setprogress(100);
+  };
 
-
-           {loading &&  <div>
-            
-             <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSq3sWjCt0zs5sZ554c2_14J3przOA-llIp_Q&usqp=CAU" alt="" srcset="" />
-            </div>}
-
-                    <div className="container">
-                 
-
-                   <div className="row">
-                       {
-                        articles.map((element) => {
-                            return <div className="col-md-4" key={element.url}>
-                                <Item title={element.title ? element.title : ""} description={element.description ? element.description : ""} imageUrl={element.urlToImage} newsUrl={element.url} author={element.author} date={element.publishedAt} source={element.source.name} />
-                            </div>
-                        })}
-                    </div>
-                 
-                   <div className='btn'>
+  useEffect(() => {
+    updateNews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     
+},[page]);
 
-                     <button  className='buttonprev' disabled={page<=1} type="button"onClick={handleprevclick} >prev</button>
-                     <button   className='buttonprev' disabled={page+1>Math.ceil(totalresults/20)} type="button" onClick={handlenextclick}>next</button>
+  const handlePrevClick = async () => {
+    setPage(page - 1);
+  };
 
-                   </div>
+  const handleNextClick = async () => {
+    setPage(page + 1);
+  };
 
-                 
-                    </div> 
-                         
+  return (
+    <>
+      <h1 className="text-center" style={{ margin: '35px 0px', marginTop: '90px' ,color:"#1f456e" }}>{props.category.charAt(0).toUpperCase() + props.category.slice(1)}</h1>
 
-            </>
-        )
-    
-}
+      {loading && <div>Loading...</div>}
 
+      <div className="container">
+        <div className="row">
+          {articles && articles.length > 0 ? (
+            articles.map((element) => (
+              <div className="col-md-4" key={element.url}>
+                <Item 
+                  title={element.title ? element.title : ""} 
+                  description={element.description ? element.description : ""} 
+                  imageUrl={element.urlToImage} 
+                  newsUrl={element.url} 
+                  author={element.author} 
+                  date={element.publishedAt} 
+                  source={element.source.name} 
+                />
+              </div>
+            ))
+          ) : (
+            <p>No articles found.</p>
+        
+          )}
+        </div>
+        <div className='btn'>
+          <button className='buttonprev' disabled={page <= 1} type="button" onClick={handlePrevClick}>prev</button>
+          <button className='buttonprev' disabled={page + 1 > Math.ceil(totalResults / props.pageSize)} type="button" onClick={handleNextClick}>next</button>
+        </div>
+      </div>
+    </>
+  );
+};
 
-
-News.defaultProps = {  
-    country: 'in',
-    pageSize: 8,
-    category: 'general',
-}
+News.defaultProps = {
+  country: 'in',
+  pageSize: 8,
+  category: 'general',
+};
 
 News.propTypes = {
-    country: PropTypes.string,
-    pageSize: PropTypes.number,
-    category: PropTypes.string,
-}
+  country: PropTypes.string,
+  pageSize: PropTypes.number,
+  category: PropTypes.string,
+};
 
-export default News  
+export default News;
